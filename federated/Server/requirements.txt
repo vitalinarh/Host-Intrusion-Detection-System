@@ -1,0 +1,5 @@
+numpy
+python-decouple
+scikit_learn
+tensorflow
+tqdm
