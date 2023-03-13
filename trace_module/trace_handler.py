@@ -1,11 +1,11 @@
 from contextlib import contextmanager
-from collections import deque
 import multiprocessing
 import subprocess
 import threading
 import time
 import psutil
 import logging
+import zmq
 from decouple import config
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -13,6 +13,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 SYSCALL_LIMIT = int(config('SYSCALL_LIMIT'))
 # Time that the parser is paused before resuming tracing 
 PAUSE_TIME = int(config('PAUSE_TIME'))
+# Flag to save syscalls in data folder 
+SAVE_SYSCALLS = int(config('SAVE_SYSCALLS'))
 
 class Process:
     def __init__(self, program_name):
@@ -99,9 +101,10 @@ class TraceHandler:
                     syscall = aux[1]
 
                     if syscall != '...':
-                        #f = open("./data/" + str(pid) + ".txt", "a")
-                        #f.write(syscall + '\n')
-                        #f.close()
+                        if SAVE_SYSCALLS == 1:
+                            f = open("./data/" + str(pid) + ".txt", "a")
+                            f.write(syscall + '\n')
+                            f.close()
                         if program_name != 'python' and  program_name != 'python3' and program_name != "dbm":
                             return (pid, syscall, program_name)
                 except:
@@ -210,6 +213,42 @@ class TraceHandler:
             if len(system_call) > 1:
                 self.system_call_dict[system_call[0]] = int(system_call[1])
 
+    def receiver(self):
+        """
+        thread for managing user manipulated inputs that puts to sequences into a queue
+        """
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind("tcp://*:5556")
+
+        while True:
+            #  Wait for next request from client
+            message = socket.recv()
+            message = message.decode("utf-8")
+            print("Received sequence: %s" % message)
+            sequence = message.split()  
+
+            if len(sequence) < self.sequence_length:
+                socket.send_string("Sequence length must be higher than " + str(self.sequence_length) + ". (" + str(self.sequence_length) + " > " + str(len(sequence)) + ")")
+            else:
+                socket.send_string("Sequence Received.") 
+
+            self.system_call_buffer_manipulated.append(sequence)
+    
+    def receiver_reader(self):
+        """
+        thread for reading and analysing user manipulated inputs
+        """
+        while True:
+            if len(self.system_call_buffer_manipulated) > 0:
+                sequence = self.system_call_buffer_manipulated[0]
+                program = "Injected by User"
+                process = 0
+
+                self.data_handling.run_decision_engine(sequence, process, program, self.sequence_length, 1)            
+                time.sleep(1)
+                self.system_call_buffer_manipulated.pop(0)
+
     def __init__(self, pid, data_handler, tool):
         """
         On initiation start two threads for reading syscalls
@@ -222,12 +261,14 @@ class TraceHandler:
                         < return
             - syscall type
             - arguments of syscall as list
-
         - Second thread reads syscalls from deque
         """
 
         # Initialize write deque thread
         self.system_call_buffer = dict()
+
+        # Initialize manipulated queue
+        self.system_call_buffer_manipulated = []
 
         # tools for system call log tracing either strace or perf trace
         self.tool = tool
@@ -235,6 +276,14 @@ class TraceHandler:
         # Initiate process that reads deque thread
         self.read_thread = threading.Thread(target=self.read_syscall, args=([]))
         self.read_thread.start()
+
+        # Setup manual input manager for data manipulation
+        self.receiver_thread = threading.Thread(target=self.receiver, args=([]))
+        self.receiver_thread.start()
+
+        # Setup manual input manager for data manipulation
+        self.receiver_thread_reader = threading.Thread(target=self.receiver_reader, args=([]))
+        self.receiver_thread_reader.start()
 
         # Initiate data_handling - where calculations on syscalls are made
         self.data_handling = data_handler
