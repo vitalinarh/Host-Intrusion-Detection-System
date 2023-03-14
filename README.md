@@ -1,86 +1,301 @@
 # Device Behaviour Monitoring
 
-Device Behaviour Monitoring component
+This repository hosts the development of a Device Behaviour Monitoring system carried out in the scope of the ARCADIAN-IoT - Autonomous Trust, Security and Privacy Management Framework for IoT, Grant Agreement Number:101020259. H2020-SU-DS02-2020.
 
-## Getting started
+This work's goal is to implement a Intusion Detection System based on system call analysis for IoT devices, while relying on Federated Learning techniques to update the AI models.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Table of contents
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+* [Requirements](#requirements)
+* [Getting started](#getting-started)
+    * [Ubuntu](#ubuntu)
+    * [Kali Linux](#kali-linux)
+    * [CentOS](#centos)
+* [Configuration](#configuration)
+* [Troubleshooting](#troubleshooting)
+* [FAQ](#faq)
+* [Authors and acknowledgment](#authors-and-acknowledgment)
+* [License](#License)
+* [Project status](#project-status)
 
-## Add your files
+## Requirements
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+This module requires the following modules:
+
+- Python: version >= 3.6
+- Perf Linux Tool
+
+## Getting started 
+
+A quick introduction of the minimal setup you need to get the program running.
+
+### Ubuntu
+
+Change to root
+```shell
+sudo -i
+```
+
+First make sure that your system is up to date
+```shell
+apt update && sudo apt upgrade -y
+```
+
+Download the repository
+```shell
+git clone https://github.com/vitalinarh/device_behaviour_monitoring
+```
+
+Change to repository folder
+```shell
+cd device_behaviour_monitoring
+```
+
+Install Perf Linux tool for system call log extraction:
+```shell
+apt install linux-tools-generic -y
+```
+
+Install the python virtual environment module:
+```shell
+apt install virtualenv python3-venv -y
+```
+
+Create a virtual environment:
+```shell
+python3 -m venv env 
+```
+
+Activate the virtual environment:
+```shell
+. $PWD/env/bin/activate
+```
+
+Install python requirements:
+```shell
+python3 -m pip install -r requirements.txt
+```
+
+Run the script
+```
+python3 dbm.py
+```
+
+If you want to create an executable:
+```shell
+python3 -m pio install pyinstaller
+python3 -m pip install --upgrade pyinstaller
+python3 -m PyInstaller -F dbm.py --hidden-import="sklearn.metrics._pairwise_distances_reduction._datasets_pair" --hidden-import="sklearn.metrics._pairwise_distances_reduction._middle_term_computer" --exclude-module _bootlocale
+```
+
+Change the executable directory to the main project folder
+```shell
+mv $PWD/dist/dbm ./
+```
+
+Execute the binary
+```shell
+./dbm
+```
+
+### Kali Linux
+
+Change to root
+```shell
+sudo -i
+```
+
+First make sure that your system is up to date
+```shell
+apt update && sudo apt upgrade -y
+```
+
+Download the repository
+```shell
+git clone https://github.com/vitalinarh/device_behaviour_monitoring
+```
+
+Change to repository folder
+```shell
+cd device_behaviour_monitoring
+```
+
+Install Perf Linux tool for system call log extraction:
+```shell
+apt install linux-perf -y
+```
+
+Install the python virtual environment module:
+```shell
+apt install python3-virtualenv -y
+```
+
+Create a virtual environment:
+```shell
+python3 -m venv env 
+```
+
+Activate the virtual environment:
+```shell
+. $PWD/env/bin/activate
+```
+
+Install python requirements:
+```shell
+python3 -m pip install -r requirements.txt
+```
+
+Run the script
+```
+python3 dbm.py
+```
+
+If you want to create an executable:
+```shell
+python3 -m pio install pyinstaller
+python3 -m pip install --upgrade pyinstaller
+python3 -m PyInstaller -F dbm.py --hidden-import="sklearn.metrics._pairwise_distances_reduction._datasets_pair" --hidden-import="sklearn.metrics._pairwise_distances_reduction._middle_term_computer" --exclude-module _bootlocale
+```
+
+Change the executable directory to the main project folder
+```shell
+mv $PWD/dist/dbm ./
+```
+
+Execute the binary
+```shell
+./dbm
+```
+
+### CentOS 7
+
+Change to root
+```shell
+sudo -i
+```
+
+First make sure that your system is up to date
+```shell
+yum -y upgrade
+```
+
+Download the repository
+```shell
+git clone https://github.com/vitalinarh/device_behaviour_monitoring
+```
+
+Change to repository folder
+```shell
+cd device_behaviour_monitoring
+```
+
+Install Perf Linux tool for system call log extraction:
+```shell
+yum install perf -y
+```
+
+Install the python virtual environment module:
+```shell
+yum install python3-virtualenv
+```
+
+Create a virtual environment:
+```shell
+python3 -m virtualenv env
+```
+
+Activate the virtual environment:
+```shell
+. $PWD/env/bin/activate
+```
+
+Install python requirements:
+```shell
+python3 -m pip install -r requirements.txt
+```
+
+Run the script
+```
+python3 dbm.py
+```
+
+If you want to create an executable:
+```shell
+python3 -m pio install pyinstaller
+python3 -m pip install --upgrade pyinstaller
+python3 -m PyInstaller -F dbm.py --hidden-import="sklearn.metrics._pairwise_distances_reduction._datasets_pair" --hidden-import="sklearn.metrics._pairwise_distances_reduction._middle_term_computer" --exclude-module _bootlocale
+```
+
+Change the executable directory to the main project folder
+```shell
+mv $PWD/dist/dbm ./
+```
+
+Execute the binary
+```shell
+./dbm
+```
+
+## Installing Federated Server Application (Ubuntu)
+
+This module is to be installed and run on a remote server.
+Assuming that you have installed Docker and it is running.
+
+Build the image
+```shell
+docker build -t server federated/Server/ 
+```
+Run the image's default command, which should start everything up.
+```shell
+docker run -it -p 9898:9898 server
+```
+
+Example of how it should look from the server side with one client:
+
+<img src="https://i.ibb.co/yqc5VYy/Screenshot-2023-03-10-at-11-58-15.png" width="850"/>
+
+## Configuration
+
+Environment variables can be set up and customized in the .env file (/trace_module folder).
+
+For RabbitMQ communication with other ARCADIAN-IoT components, we need to setup of the next variables:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/arcadian_iot/device_behaviour_monitoring.git
-git branch -M main
-git push -uf origin main
+HOST
+PORT
+VIRTUAL_HOST
+CREDENTIALS_USERNAME
+CREDENTIALS_PASSWORD
+ROUTING_KEY
+EXCHANGE_KEY
 ```
 
-## Integrate with your tools
+Other variables can also be changed and calibrated:
 
-- [ ] [Set up project integrations](https://gitlab.com/arcadian_iot/device_behaviour_monitoring/-/settings/integrations)
+Threshold value for intrusion detection (value needs to be from 0 to 1). Default value is 0.5
+```
+DETECTION_THRESHOLD
+````
 
-## Collaborate with your team
+Maximum of system calls in queue before pausing the tracer. Default value is 25000.
+```
+SYSCALL_LIMIT
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Cooldown time (in seconds) for the tracer before resuming the syscall tracing. Default value is 30 seconds.
+```
+PAUSE_TIME
+```
 
-## Test and Deploy
+Flag to save or not syscalls in data folder. 1 is to enable the syscalls being saved on /data folder, any other value is to disable.
+```
+SAVE_SYSCALLS
+```
 
-Use the built-in continuous integration in GitLab.
+## Troubleshooting
+WIP
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## FAQ
 
 ## Authors and acknowledgment
 Show your appreciation to those who have contributed to the project.
