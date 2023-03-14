@@ -14,6 +14,8 @@ SYSCALL_LIMIT = int(config('SYSCALL_LIMIT'))
 # Time that the parser is paused before resuming tracing 
 PAUSE_TIME = int(config('PAUSE_TIME'))
 
+SAVE_SYSCALLS = int(config('SAVE_SYSCALLS'))
+
 class Process:
     def __init__(self, program_name):
         self.program_name = program_name
@@ -99,9 +101,10 @@ class TraceHandler:
                     syscall = aux[1]
 
                     if syscall != '...':
-                        #f = open("./data/" + str(pid) + ".txt", "a")
-                        #f.write(syscall + '\n')
-                        #f.close()
+                        if SAVE_SYSCALLS == 1:
+                            f = open("./data/" + str(pid) + ".txt", "a")
+                            f.write(syscall + '\n')
+                            f.close()
                         if program_name != 'python' and  program_name != 'python3' and program_name != "dbm":
                             return (pid, syscall, program_name)
                 except:

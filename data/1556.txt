@@ -1,0 +1,6 @@
+inotify_add_watch
+inotify_add_watch
+inotify_add_watch
+inotify_add_watch
+inotify_add_watch
+ppoll

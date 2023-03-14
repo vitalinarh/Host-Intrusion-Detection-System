@@ -1,0 +1,14 @@
+futex
+openat
+getdents64
+getdents64
+close
+write
+futex
+futex
+openat
+getdents64
+getdents64
+close
+write
+futex

@@ -33,7 +33,6 @@ class Listener:
             channel = connection.channel()
 
             #channel.queue_declare(queue='device_behaviour_monitoring_queue', durable=True)
-            channel.exchange_declare(exchange='dbm_exchange', exchange_type='topic', durable='true')
             channel.queue_bind(exchange='dbm_exchange', queue='device_behaviour_monitoring_queue')
         except:
             logging.info("Connection refused to RabbitMQ. Will retry in 30 seconds.")
@@ -47,7 +46,8 @@ class Listener:
             body_bytes = json.loads(body)
             logging.info(body_bytes)
 
-        channel.basic_consume(queue=ROUTING_KEY, on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue="rs_queue", on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue="device_behaviour_monitoring_queue", on_message_callback=callback, auto_ack=True)
         channel.start_consuming()
 
     def __init__(self):

@@ -1,0 +1,7 @@
+getpid
+kill
+epoll_pwait
+epoll_pwait
+write
+epoll_pwait
+epoll_pwait
