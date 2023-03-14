@@ -16,6 +16,12 @@ PAUSE_TIME = int(config('PAUSE_TIME'))
 
 SAVE_SYSCALLS = int(config('SAVE_SYSCALLS'))
 
+FILTER_OUT = config('FILTER_OUT')
+FILTER_OUT = FILTER_OUT.split(",")
+
+FILTER_IN = config('FILTER_IN')
+FILTER_IN = FILTER_IN.split(",")
+
 class Process:
     def __init__(self, program_name):
         self.program_name = program_name
@@ -105,7 +111,9 @@ class TraceHandler:
                             f = open("./data/" + str(pid) + ".txt", "a")
                             f.write(syscall + '\n')
                             f.close()
-                        if program_name != 'python' and  program_name != 'python3' and program_name != "dbm":
+                        if program_name not in FILTER_OUT:
+                            if len(FILTER_IN) > 1 and program_name not in FILTER_IN:
+                                return None
                             return (pid, syscall, program_name)
                 except:
                     return None
