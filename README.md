@@ -292,6 +292,18 @@ Flag to save or not syscalls in data folder. 1 is to enable the syscalls being s
 SAVE_SYSCALLS
 ```
 
+Filter out programs/processes with a certain name (e.g., python)
+
+```
+FILTER_OUT
+```
+
+Filter in only programs/processes with a certain name (e.g., python)
+
+```
+FILTER_IN
+```
+
 ## Troubleshooting
 WIP
 
