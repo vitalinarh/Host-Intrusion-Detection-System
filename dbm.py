@@ -18,6 +18,8 @@ if __name__ == "__main__":
         if system() == 'Linux':
             clear_screen()
             trace.main("perf", None)
+        else:
+            trace.main("perf", None)
 
     except KeyboardInterrupt:
         print("\nExiting ..")
