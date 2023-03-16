@@ -2,6 +2,7 @@ import pickle
 import os
 import numpy as np
 from sklearn.feature_extraction.text import TfidfTransformer
+import scipy
 import datetime
 from decouple import config
 
