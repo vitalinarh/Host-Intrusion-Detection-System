@@ -6,6 +6,8 @@ import threading
 import time
 import psutil
 import logging
+import os
+import sys
 from decouple import config
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -16,6 +18,7 @@ PAUSE_TIME = int(config('PAUSE_TIME'))
 
 SAVE_SYSCALLS = int(config('SAVE_SYSCALLS'))
 
+TRACER = config('TRACER')
 FILTER_OUT = config('FILTER_OUT')
 FILTER_OUT = FILTER_OUT.split(",")
 
@@ -69,7 +72,7 @@ class TraceHandler:
         self.trace_process = None
         processes = self.get_processes(pid)
 
-        if self.tool == 'perf':
+        if TRACER == 'perf':
             if pid != None and len(processes) != 0:
                 sensor_command_line = "sudo perf trace -p "  + str(pid)
                 self.flag = 2
@@ -81,6 +84,67 @@ class TraceHandler:
 
             self.p = self.execute_perf(sensor_command_line)
             yield self.p
+
+        if TRACER == 'strace':
+            sensor_command_line = 'sudo strace -xx -T -n'
+
+            i = 0
+            not_root = []
+
+            if pid != None and len(processes) != 0:
+                sensor_command_line += ' -p ' + str(pid) + ' -f'
+                self.flag = 2
+            elif pid != None:
+                sensor_command_line += ' ' + str(pid)
+            else:
+                self.process_dict = dict()
+                for process in processes:
+                    # get processes that are not root
+                    if process['USER'][2::] != 'root':
+                        self.process_dict[process['PID']] = process["COMMAND\\n'"]
+                        not_root.append(process['PID'])
+                        if "systemd-oomd" not in process["COMMAND\\n'"] and "systemd-resolved" not in process["COMMAND\\n'"] and "gsd-housekeeping" not in process["COMMAND\\n'"]:
+                            sensor_command_line += ' -p ' + process['PID']
+                            i += 1
+                    if i == 100:
+                        break
+            self.p = self.execute_perf(sensor_command_line)
+            yield self.p
+    
+    def syscall_parser_strace(self, line):
+        """
+        parser that retrieves syscall and pid of a strace system call log line
+        :rtype: int, str
+        :returns: pid and system call
+        """
+        if line.startswith("[pid"):
+
+            aux = line.split()
+            pid = aux[1][:-1]
+
+            if aux[4] != "<..." and aux[4] != "---" and aux[4] != '+++':
+                aux = aux[4].split("(")
+                syscall = aux[0]
+            else:
+                return None
+
+        elif line.startswith("["):
+            aux = line.split()
+            if aux[2] != "<..." and aux[2] != "---" and aux[2] != '+++':
+                aux = aux[2].split("(")
+                syscall = aux[0]
+            else:
+                return None
+        else:
+            return None
+        program = "-"
+        try:
+            program = self.process_dict[pid]
+        except:
+            pass
+
+        return (pid, syscall, program)
+        return None
   
     def syscall_parser_perf(self, syscall):
         """
@@ -128,8 +192,12 @@ class TraceHandler:
 
         logging.info("Started Tracing.")
         with self.start_tracer_and_read_data(target_pid) as s_out:
-            for line in s_out.stdout:          
-                parsed_syscall = self.syscall_parser_perf(line)
+            for line in s_out.stdout:   
+
+                if TRACER == 'perf':  
+                    parsed_syscall = self.syscall_parser_perf(line)
+                else:
+                    parsed_syscall = self.syscall_parser_strace(line)
 
                 if parsed_syscall != None:
                     count += 1
@@ -201,6 +269,9 @@ class TraceHandler:
             # check whether the process name matches
             if proc.name() == "perf":
                 proc.kill()
+            if proc.name() == "strace":
+                proc.kill()
+            print(proc.name())
         
     def get_sys_to_int(self, system_call):
         """
@@ -236,6 +307,8 @@ class TraceHandler:
 
         - Second thread reads syscalls from deque
         """
+
+        self.process_dict = dict()
 
         # Initialize write deque thread
         self.system_call_buffer = dict()
