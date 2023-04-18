@@ -144,7 +144,6 @@ class TraceHandler:
             pass
 
         return (pid, syscall, program)
-        return None
   
     def syscall_parser_perf(self, syscall):
         """
@@ -214,6 +213,7 @@ class TraceHandler:
                         pass
                 
                     system_call = str(system_call)
+                    print(system_call)
                     pid = parsed_syscall[0]
                     program_name = parsed_syscall[2]
 
