@@ -197,6 +197,7 @@ class TraceHandler:
                 else:
                     parsed_syscall = self.syscall_parser_strace(line)
 
+                print(parsed_syscall)
                 if parsed_syscall != None:
                     count += 1
                 if count >= SYSCALL_LIMIT:
@@ -213,7 +214,7 @@ class TraceHandler:
                         pass
                 
                     system_call = str(system_call)
-                    print(system_call)
+            
                     pid = parsed_syscall[0]
                     program_name = parsed_syscall[2]
 
