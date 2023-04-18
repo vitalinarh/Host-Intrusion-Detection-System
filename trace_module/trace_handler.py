@@ -118,12 +118,12 @@ class TraceHandler:
         :returns: pid and system call
         """
         if line.startswith("[pid"):
-            print(line)
             aux = line.split()
             pid = aux[1][:-1]
-
+            print(pid)
             if aux[4] != "<..." and aux[4] != "---" and aux[4] != '+++':
                 aux = aux[4].split("(")
+                print(aux)
                 syscall = aux[0]
             else:
                 return None
