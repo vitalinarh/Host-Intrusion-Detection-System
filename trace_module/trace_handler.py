@@ -100,7 +100,7 @@ class TraceHandler:
                 self.process_dict = dict()
                 for process in processes:
                     # get processes that are not root
-                    if process['USER'][2::] != 'root':
+                    if process['USER'][2::] != '-':
                         self.process_dict[process['PID']] = process["COMMAND\\n'"]
                         not_root.append(process['PID'])
                         if "systemd-oomd" not in process["COMMAND\\n'"] and "systemd-resolved" not in process["COMMAND\\n'"] and "gsd-housekeeping" not in process["COMMAND\\n'"]:
