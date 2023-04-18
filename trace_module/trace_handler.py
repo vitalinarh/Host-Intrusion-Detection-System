@@ -106,7 +106,7 @@ class TraceHandler:
                         if "systemd-oomd" not in process["COMMAND\\n'"] and "systemd-resolved" not in process["COMMAND\\n'"] and "gsd-housekeeping" not in process["COMMAND\\n'"]:
                             sensor_command_line += ' -p ' + process['PID']
                             i += 1
-                    if i == 200:
+                    if i == 100:
                         break
             self.p = self.execute_perf(sensor_command_line)
             yield self.p
