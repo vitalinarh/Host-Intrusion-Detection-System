@@ -86,7 +86,7 @@ class TraceHandler:
             yield self.p
 
         if TRACER == 'strace':
-            sensor_command_line = 'sudo strace -xx -T -n'
+            sensor_command_line = 'sudo strace -xx -T'
 
             i = 0
             not_root = []
