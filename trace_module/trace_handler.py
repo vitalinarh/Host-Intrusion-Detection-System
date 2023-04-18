@@ -193,7 +193,6 @@ class TraceHandler:
         logging.info("Started Tracing.")
         with self.start_tracer_and_read_data(target_pid) as s_out:
             for line in s_out.stdout:   
-                print(line)
                 if TRACER == 'perf':  
                     parsed_syscall = self.syscall_parser_perf(line)
                 else:
