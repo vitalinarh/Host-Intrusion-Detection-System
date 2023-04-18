@@ -120,7 +120,6 @@ class TraceHandler:
         if line.startswith("[pid"):
             aux = line.split()
             pid = aux[1][:-1]
-            print(pid)
             if aux[4] != "<..." and aux[4] != "---" and aux[4] != '+++':
                 aux = aux[2].split("(")
                 syscall = aux[0]
@@ -269,7 +268,6 @@ class TraceHandler:
                 proc.kill()
             if proc.name() == "strace":
                 proc.kill()
-            print(proc.name())
         
     def get_sys_to_int(self, system_call):
         """
