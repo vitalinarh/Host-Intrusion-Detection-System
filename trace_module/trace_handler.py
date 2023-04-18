@@ -100,13 +100,13 @@ class TraceHandler:
                 self.process_dict = dict()
                 for process in processes:
                     # get processes that are not root
-                    if process['USER'][2::] != '-':
+                    if process['USER'][2::] != 'ROOT':
                         self.process_dict[process['PID']] = process["COMMAND\\n'"]
                         not_root.append(process['PID'])
                         if "systemd-oomd" not in process["COMMAND\\n'"] and "systemd-resolved" not in process["COMMAND\\n'"] and "gsd-housekeeping" not in process["COMMAND\\n'"]:
                             sensor_command_line += ' -p ' + process['PID']
                             i += 1
-                    if i == 100:
+                    if i == 200:
                         break
             self.p = self.execute_perf(sensor_command_line)
             yield self.p
@@ -118,7 +118,7 @@ class TraceHandler:
         :returns: pid and system call
         """
         if line.startswith("[pid"):
-
+            print(line)
             aux = line.split()
             pid = aux[1][:-1]
 
@@ -197,7 +197,6 @@ class TraceHandler:
                 else:
                     parsed_syscall = self.syscall_parser_strace(line)
 
-                print(parsed_syscall)
                 if parsed_syscall != None:
                     count += 1
                 if count >= SYSCALL_LIMIT:
