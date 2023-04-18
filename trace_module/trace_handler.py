@@ -122,8 +122,9 @@ class TraceHandler:
             pid = aux[1][:-1]
             print(pid)
             if aux[4] != "<..." and aux[4] != "---" and aux[4] != '+++':
-                aux = aux[4].split("(")
                 print(aux)
+                aux = aux[4].split("(")
+               
                 syscall = aux[0]
             else:
                 return None
