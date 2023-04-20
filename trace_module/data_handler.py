@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import TfidfTransformer
 import datetime
 from decouple import config
 
+from tensorflow.keras.models import model_from_json
+
 import logging
 logging.getLogger('pika').setLevel(logging.INFO)
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -45,7 +47,7 @@ class DataHandler:
         json_model = json_file.read()
         json_file.close()
         self.model_chi2 = model_from_json(json_model)
-        self.model_chi2.load_weights("./res/model_chi2.h5")
+        self.model_chi2.load_weights("./resources/model_chi2.h5")
 
         #self.loaded_model = pickle.load(open('./resources/mlp_model.sav', 'rb'))
 
@@ -71,17 +73,19 @@ class DataHandler:
         y_pred = self.model_chi2.predict(x_test, verbose=0)
         #y_pred = self.loaded_model.predict(x_test)
         #y_pred = self.loaded_model.predict_proba(x_test)
-        
+
         for i in range(len(y_pred)):
             ct = datetime.datetime.now()
             ts = ct.timestamp()
-            if y_pred[i][1] <= DETECTION_THRESHOLD:
-                confidence_level = (DETECTION_THRESHOLD - y_pred[i][1]) / (DETECTION_THRESHOLD)
-                #confidence_level = y_pred[i][0]
+            if y_pred[i][0] <= DETECTION_THRESHOLD:
+                # Normal
+                #confidence_level = (DETECTION_THRESHOLD - y_pred[i][1]) / (DETECTION_THRESHOLD)
+                confidence_level = y_pred[i][0]
                 self.print_stats(pid, program_name, confidence_level, main_corpus_x[i], "Benign",  ct, -1, -1, flag) 
                 #self.clear_screen()
                 
             else:
+                # Anomaly
                 if program_name not in self.intrusions.keys():
                     self.intrusions[program_name] = [ts]
                 else:
@@ -90,8 +94,8 @@ class DataHandler:
                 ts_start = self.intrusions[program_name][0]
                 occurence_number = len(self.intrusions[program_name])
 
-                confidence_level = (y_pred[i][1] - DETECTION_THRESHOLD) / (1 - DETECTION_THRESHOLD)
-                #confidence_level = y_pred[i][1]
+                #confidence_level = (y_pred[i][1] - DETECTION_THRESHOLD) / (1 - DETECTION_THRESHOLD)
+                confidence_level = y_pred[i][0]
                 self.print_stats(pid, program_name, confidence_level, main_corpus_x[i], "Malign", ts, ts_start, occurence_number, flag)
                 #message_bus.send(str(ct), str(ts), " ".join(sequence), program_name, pid, str(confidence_level), ts_start, occurence_number)
                 
