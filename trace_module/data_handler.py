@@ -44,10 +44,10 @@ class DataHandler:
         json_file = open('resources/model_chi2.json', 'r')
         json_model = json_file.read()
         json_file.close()
-        #self.model_chi2 = model_from_json(json_model)
-        #self.model_chi2.load_weights("./res/model_chi2.h5")
+        self.model_chi2 = model_from_json(json_model)
+        self.model_chi2.load_weights("./res/model_chi2.h5")
 
-        self.loaded_model = pickle.load(open('./resources/mlp_model.sav', 'rb'))
+        #self.loaded_model = pickle.load(open('./resources/mlp_model.sav', 'rb'))
 
         self.malicious_counter = 0
         self.benign_counter = 0
@@ -68,9 +68,9 @@ class DataHandler:
         x_test = self.fs_chi2.transform(x_test)
         x_test = np.asarray(x_test)
 
-        #y_pred = self.model_chi2.predict(x_test, verbose=0)
-        y_pred = self.loaded_model.predict(x_test)
-        y_pred = self.loaded_model.predict_proba(x_test)
+        y_pred = self.model_chi2.predict(x_test, verbose=0)
+        #y_pred = self.loaded_model.predict(x_test)
+        #y_pred = self.loaded_model.predict_proba(x_test)
         
         for i in range(len(y_pred)):
             ct = datetime.datetime.now()
